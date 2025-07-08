@@ -1,15 +1,18 @@
 package com.uece.coffeebreak.view.controller;
 
-import com.uece.coffeebreak.entity.Order;
 import com.uece.coffeebreak.service.OrderService;
+import com.uece.coffeebreak.shared.OrderDTO;
+import com.uece.coffeebreak.view.model.request.OrderRequest;
+import com.uece.coffeebreak.view.model.response.OrderResponse;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/orders")
@@ -18,14 +21,44 @@ public class OrderController {
     private OrderService service;
 
     @GetMapping
-    public ResponseEntity<List<Order>> findAll() {
-        List<Order> orders = service.findAll();
-        return ResponseEntity.ok().body(orders);
+    public ResponseEntity<List<OrderResponse>> findAll() {
+        List<OrderDTO> orders = service.findAll();
+        ModelMapper mapper = new ModelMapper();
+        List<OrderResponse> response = orders.stream()
+                .map(order -> mapper.map(order, OrderResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<Order> findById(@PathVariable Long id) {
-        Order order = service.findById(id);
-        return ResponseEntity.ok().body(order);
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
+        OrderDTO orderDTO = service.findById(id);
+        OrderResponse response = new ModelMapper().map(orderDTO, OrderResponse.class);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping
+    public ResponseEntity<OrderResponse> insert(@RequestBody OrderRequest request) {
+        OrderDTO orderDTO = new ModelMapper().map(request, OrderDTO.class);
+        orderDTO = service.insert(orderDTO);
+        OrderResponse response = new ModelMapper().map(orderDTO, OrderResponse.class);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(orderDTO.getId()).toUri();
+        return ResponseEntity.created(uri).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderResponse> update(@PathVariable Long id, @RequestBody OrderRequest request) {
+        ModelMapper mapper = new ModelMapper();
+        OrderDTO dto = mapper.map(request, OrderDTO.class);
+        dto = service.update(id, dto);
+        OrderResponse response = mapper.map(dto, OrderResponse.class);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

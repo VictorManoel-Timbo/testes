@@ -25,7 +25,9 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> findAll() {
         List<UserDTO> usersDTO =  service.findAll();
         ModelMapper mapper = new ModelMapper();
-        List<UserResponse> response = usersDTO.stream().map(user -> mapper.map(user, UserResponse.class)).collect(Collectors.toList());
+        List<UserResponse> response = usersDTO.stream()
+                .map(user -> mapper.map(user, UserResponse.class))
+                .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
     }
     @GetMapping(value = "/{id}")
@@ -44,18 +46,22 @@ public class UserController {
 
     @GetMapping(value = "/search")
     public ResponseEntity<List<UserResponse>> findByName(@RequestParam(value = "name") String name) {
-        List<UserDTO> userDTO = service.findByName(name);
+        List<UserDTO> usersDTO = service.findByName(name);
         ModelMapper mapper = new ModelMapper();
-        List<UserResponse> response = userDTO.stream().map(user -> mapper.map(user, UserResponse.class)).collect(Collectors.toList());
+        List<UserResponse> response = usersDTO.stream()
+                .map(user -> mapper.map(user, UserResponse.class))
+                .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> insert(@RequestBody UserRequest userRequest) {
-        UserDTO userDTO = new ModelMapper().map(userRequest, UserDTO.class);
+    public ResponseEntity<UserResponse> insert(@RequestBody UserRequest request) {
+        ModelMapper mapper = new ModelMapper();
+        UserDTO userDTO = mapper.map(request, UserDTO.class);
         userDTO = service.insert(userDTO);
-        UserResponse response = new ModelMapper().map(userDTO, UserResponse.class);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(userDTO.getId()).toUri();
+        UserResponse response = mapper.map(userDTO, UserResponse.class);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(userDTO.getId()).toUri();
         return ResponseEntity.created(uri).body(response);
     }
 
@@ -66,9 +72,9 @@ public class UserController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id ,@RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> update(@PathVariable Long id ,@RequestBody UserRequest request) {
         ModelMapper mapper = new ModelMapper();
-        UserDTO userDTO = mapper.map(userRequest, UserDTO.class);
+        UserDTO userDTO = mapper.map(request, UserDTO.class);
         userDTO = service.update(id, userDTO);
         UserResponse response = mapper.map(userDTO, UserResponse.class);
         return ResponseEntity.ok().body(response);

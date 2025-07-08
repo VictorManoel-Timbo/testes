@@ -7,6 +7,7 @@ import java.time.Instant;
 public class PaymentResponse {
     private Long id;
     private Instant moment;
+    private Long orderId;
     private PayMethod method;
     private Integer installments;
 
@@ -40,5 +41,13 @@ public class PaymentResponse {
 
     public void setInstallments(Integer installments) {
         this.installments = installments;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 }
