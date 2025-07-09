@@ -51,6 +51,9 @@ public class UserService{
     }
 
     public UserDTO insert(UserDTO userDTO) {
+        if (repository.existsByEmail(userDTO.getEmail())) {
+            throw new DatabaseException("E-mail already exists");
+        }
         userDTO.setId(null);
         if (userDTO.getRole() == null) {
             userDTO.setRole(Role.CLIENT);

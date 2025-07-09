@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/payments")
+@RequestMapping(value = "/api/v1/payments")
 public class PaymentController {
 
     @Autowired

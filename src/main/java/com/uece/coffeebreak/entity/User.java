@@ -34,7 +34,7 @@ public class User implements Serializable {
     private Role role;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "client", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<Order>();
 
     public User() {}

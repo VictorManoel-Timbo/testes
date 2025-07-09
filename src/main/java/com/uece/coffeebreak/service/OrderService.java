@@ -130,20 +130,20 @@ public class OrderService {
 
     public OrderDTO fromRequest(OrderRequest request) {
         ModelMapper mapper = new ModelMapper();
-        OrderDTO dto = new OrderDTO();
+        OrderDTO orderDTO = new OrderDTO();
 
-        dto.setMoment(request.getMoment());
-        dto.setStatus(request.getStatus());
-        dto.setWithdrawalMethod(request.getWithdrawalMethod());
+        orderDTO.setMoment(request.getMoment());
+        orderDTO.setStatus(request.getStatus());
+        orderDTO.setWithdrawalMethod(request.getWithdrawalMethod());
 
         User client = userRepository.findById(request.getClientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + request.getClientId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + request.getClientId() + " not found"));
         UserDTO clientDTO = mapper.map(client, UserDTO.class);
-        dto.setClient(clientDTO);
+        orderDTO.setClient(clientDTO);
 
         List<OrderProductDTO> items = request.getItems().stream().map(itemReq -> {
             Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemReq.getProductId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product  with id " + itemReq.getProductId() + " not found"));
             ProductDTO productDTO = mapper.map(product, ProductDTO.class);
 
             OrderProductDTO itemDTO = new OrderProductDTO();
@@ -156,12 +156,12 @@ public class OrderService {
             return itemDTO;
         }).collect(Collectors.toList());
 
-        dto.setItems(items);
+        orderDTO.setItems(items);
         if (request.getPayment() != null) {
             PaymentDTO payDTO = mapper.map(request.getPayment(), PaymentDTO.class);
-            dto.setPayment(payDTO);
+            orderDTO.setPayment(payDTO);
         }
-        return dto;
+        return orderDTO;
     }
 
 }

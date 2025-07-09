@@ -32,11 +32,11 @@ public class Order implements Serializable {
     @Transient
     private Double total;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "client_id", nullable = false)
     private User client;
 
-    @OneToMany(mappedBy = "id.order")
+    @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderProduct> items = new HashSet<>();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)

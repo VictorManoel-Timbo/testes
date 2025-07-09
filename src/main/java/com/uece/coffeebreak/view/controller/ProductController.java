@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/products")
+@RequestMapping(value = "/api/v1/products")
 public class ProductController {
 
     @Autowired
@@ -49,10 +49,9 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponse> insert(@RequestBody ProductRequest request) {
-        ModelMapper mapper = new ModelMapper();
-        ProductDTO productDTO = mapper.map(request, ProductDTO.class);
+        ProductDTO productDTO = service.fromRequest(request);
         productDTO = service.insert(productDTO);
-        ProductResponse response = mapper.map(productDTO, ProductResponse.class);
+        ProductResponse response = new ModelMapper().map(productDTO, ProductResponse.class);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(productDTO.getId()).toUri();
         return ResponseEntity.created(uri).body(response);
@@ -60,10 +59,9 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(@PathVariable Long id, @RequestBody ProductRequest request) {
-        ModelMapper mapper = new ModelMapper();
-        ProductDTO productDTO = mapper.map(request, ProductDTO.class);
+        ProductDTO productDTO = service.fromRequest(request);
         productDTO = service.update(id, productDTO);
-        ProductResponse response = mapper.map(productDTO, ProductResponse.class);
+        ProductResponse response = new ModelMapper().map(productDTO, ProductResponse.class);
         return ResponseEntity.ok().body(response);
     }
 

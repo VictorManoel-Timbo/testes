@@ -94,6 +94,6 @@ public class TestConfig implements CommandLineRunner {
         o1.setPayment(pay1);
         o3.setPayment(pay2);
 
-        orderRepository.save(o1);
+        orderRepository.saveAll(Arrays.asList(o1, o2, o3));
     }
 }

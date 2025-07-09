@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/orders")
+@RequestMapping(value = "/api/v1/orders")
 public class OrderController {
     @Autowired
     private OrderService service;
@@ -44,15 +44,14 @@ public class OrderController {
         OrderResponse response = new ModelMapper().map(orderDTO, OrderResponse.class);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(orderDTO.getId()).toUri();
-
         return ResponseEntity.created(uri).body(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderResponse> update(@PathVariable Long id, @RequestBody OrderRequest request) {
-        OrderDTO dto = service.fromRequest(request);
-        dto = service.update(id, dto);
-        OrderResponse response = new ModelMapper().map(dto, OrderResponse.class);
+        OrderDTO orderDTO = service.fromRequest(request);
+        orderDTO = service.update(id, orderDTO);
+        OrderResponse response = new ModelMapper().map(orderDTO, OrderResponse.class);
         return ResponseEntity.ok().body(response);
     }
 

@@ -14,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :substring, '%'))")
     List<User> findByNameContaining(@Param("substring") String name);
+
+    boolean existsByEmail(String email);
 }

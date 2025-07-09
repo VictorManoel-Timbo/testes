@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/categories")
+@RequestMapping(value = "/api/v1/categories")
 public class CategoryController {
 
     @Autowired

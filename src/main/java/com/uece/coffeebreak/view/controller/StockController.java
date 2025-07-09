@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/stocks")
+@RequestMapping(value = "/api/v1/stocks")
 public class StockController {
     @Autowired
     private StockService service;
