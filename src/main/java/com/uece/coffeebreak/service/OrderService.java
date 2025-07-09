@@ -45,13 +45,13 @@ public class OrderService {
         Order order = new ModelMapper().map(orderDTO, Order.class);
 
         User client = userRepository.findById(orderDTO.getClient().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client with id " + orderDTO.getClient().getId() + " not found"));
         order.setClient(client);
 
         order.getItems().clear();
         for (OrderProductDTO itemDTO : orderDTO.getItems()) {
             Product product = productRepository.findById(itemDTO.getProduct().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product with id " + itemDTO.getProduct().getId() + " not found"));
             OrderProduct item = new OrderProduct(
                     order,
                     product,
@@ -74,6 +74,7 @@ public class OrderService {
     }
 
     public OrderDTO update(Long id, OrderDTO orderDTO) {
+        orderDTO.setId(id);
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
 
@@ -89,7 +90,7 @@ public class OrderService {
             order.getItems().clear();
             for (OrderProductDTO itemDTO : orderDTO.getItems()) {
                 if (itemDTO.getProduct() == null || itemDTO.getProduct().getId() == null) {
-                    throw new ResourceNotFoundException("Product ID is required for each item");
+                    throw new ResourceNotFoundException("Product with id " + itemDTO.getProduct().getId() + " not found");
                 }
                 Product product = productRepository.findById(itemDTO.getProduct().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Product with id " + itemDTO.getProduct().getId() + " not found"));
@@ -120,7 +121,7 @@ public class OrderService {
 
     public void delete(Long id) {
         try {
-            Order order = orderRepository.findById(id)
+            orderRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
             orderRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {

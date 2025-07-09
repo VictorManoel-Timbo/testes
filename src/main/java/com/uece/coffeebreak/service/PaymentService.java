@@ -65,6 +65,11 @@ public class PaymentService {
 
     public void delete(Long id) {
         try {
+            Payment payment = paymentRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Payment with id " + id + " not found"));
+            Order order = payment.getOrder();
+            order.setPayment(null);
+            orderRepository.save(payment.getOrder());
             paymentRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());

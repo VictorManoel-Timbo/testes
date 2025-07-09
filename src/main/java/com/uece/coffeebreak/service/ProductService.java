@@ -1,9 +1,6 @@
 package com.uece.coffeebreak.service;
 
-import com.uece.coffeebreak.entity.Category;
-import com.uece.coffeebreak.entity.Ingredient;
-import com.uece.coffeebreak.entity.Product;
-import com.uece.coffeebreak.entity.Stock;
+import com.uece.coffeebreak.entity.*;
 import com.uece.coffeebreak.entity.exception.DatabaseException;
 import com.uece.coffeebreak.entity.exception.ResourceNotFoundException;
 import com.uece.coffeebreak.repository.CategoryRepository;
@@ -58,6 +55,12 @@ public class ProductService {
     public ProductDTO insert(ProductDTO productDTO) {
         productDTO.setId(null);
         Product product = new ModelMapper().map(productDTO, Product.class);
+
+        product.getComposition().clear();
+        for (CompProductStockDTO compDTO : productDTO.getComposition()) {
+            addCompositionToProduct(product, compDTO);
+        }
+
         product = productRepository.save(product);
         productDTO.setId(product.getId());
         return productDTO;
@@ -67,11 +70,50 @@ public class ProductService {
         productDTO.setId(id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+
+        Category category = product.getCategory();
+
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
         mapper.map(productDTO, product);
+
+        product.setCategory(category);
+
+        if (product.getComposition() != null) {
+            product.getComposition().clear();
+            for (CompProductStockDTO compDTO : productDTO.getComposition()) {
+                if (compDTO.getStock() == null || compDTO.getStock().getId() == null) {
+                    throw new ResourceNotFoundException("Stock with id " + compDTO.getStock().getId() + " not found");
+                }
+                if (compDTO.getIngredient() == null || compDTO.getIngredient().getId() == null) {
+                    throw new ResourceNotFoundException("Ingredient with id " + compDTO.getIngredient().getId() + " not found");
+                }
+
+                addCompositionToProduct(product, compDTO);
+            }
+        }
+
         product = productRepository.save(product);
         return mapper.map(product, ProductDTO.class);
+    }
+
+    private void addCompositionToProduct(Product product, CompProductStockDTO compDTO) {
+        Stock stock = stockRepository.findById(compDTO.getStock().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + compDTO.getStock().getId() + " not found"));
+
+        Ingredient ingredient = ingredientRepository.findById(compDTO.getIngredient().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + compDTO.getStock().getId() + " not found"));
+
+        CompProductStock composition = new CompProductStock(
+                product,
+                stock,
+                ingredient,
+                compDTO.getQuantityRequired(),
+                compDTO.getReplaceable(),
+                compDTO.getUseType(),
+                compDTO.getReusable()
+        );
+        product.getComposition().add(composition);
     }
 
     public void delete(Long id) {

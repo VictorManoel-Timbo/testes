@@ -27,7 +27,7 @@ public class Stock implements Serializable {
     private String description;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "id.stock")
+    @OneToMany(mappedBy = "id.stock", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CompProductStock> composition = new HashSet<CompProductStock>();
 
 

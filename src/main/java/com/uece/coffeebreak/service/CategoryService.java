@@ -1,9 +1,11 @@
 package com.uece.coffeebreak.service;
 
 import com.uece.coffeebreak.entity.Category;
+import com.uece.coffeebreak.entity.Product;
 import com.uece.coffeebreak.entity.exception.DatabaseException;
 import com.uece.coffeebreak.entity.exception.ResourceNotFoundException;
 import com.uece.coffeebreak.repository.CategoryRepository;
+import com.uece.coffeebreak.repository.ProductRepository;
 import com.uece.coffeebreak.shared.CategoryDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ public class CategoryService {
 
     @Autowired
     private CategoryRepository repository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     public List<CategoryDTO> findAll() {
         List<Category> categories = repository.findAll();
@@ -62,6 +67,10 @@ public class CategoryService {
         try {
             Category category = repository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Category with id " + id + " not found"));
+            for (Product product : category.getProducts()) {
+                product.setCategory(null);
+            }
+            productRepository.saveAll(category.getProducts());
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());

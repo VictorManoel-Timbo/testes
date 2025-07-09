@@ -31,7 +31,7 @@ public class Ingredient implements Serializable {
     private String supplier;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "id.ingredient")
+    @OneToMany(mappedBy = "id.ingredient", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CompProductStock> composition = new HashSet<>();
 
     public Ingredient() {}

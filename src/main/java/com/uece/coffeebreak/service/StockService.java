@@ -52,7 +52,7 @@ public class StockService {
 
     public void delete(Long id) {
         try {
-            Stock stock = repository.findById(id)
+            repository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + id + " not found"));
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {

@@ -13,15 +13,15 @@ import java.io.Serializable;
 public class CompProductStockPK implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "stock_id")
     private Stock stock;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "ingredient_id")
     private Ingredient ingredient;
 

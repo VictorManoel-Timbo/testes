@@ -59,7 +59,7 @@ public class IngredientService {
 
     public void delete(Long id) {
         try {
-            Ingredient entity = repository.findById(id)
+            repository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + id + " not found"));
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {

@@ -67,7 +67,7 @@ public class UserService{
 
     public void delete(Long id) {
         try {
-            User user = repository.findById(id)
+            repository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
