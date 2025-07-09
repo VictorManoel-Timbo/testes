@@ -36,6 +36,16 @@ public class IngredientController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<IngredientResponse>> findByName(@RequestParam(value = "name") String name) {
+        List<IngredientDTO> ingredientsDTO = service.findByName(name);
+        ModelMapper mapper = new ModelMapper();
+        List<IngredientResponse> response = ingredientsDTO.stream()
+                .map(ingredient -> mapper.map(ingredient, IngredientResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
+    }
+
     @PostMapping
     public ResponseEntity<IngredientResponse> insert(@RequestBody IngredientRequest request) {
         ModelMapper mapper = new ModelMapper();

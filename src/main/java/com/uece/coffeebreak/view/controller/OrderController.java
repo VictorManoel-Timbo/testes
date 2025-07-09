@@ -39,20 +39,20 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponse> insert(@RequestBody OrderRequest request) {
-        OrderDTO orderDTO = new ModelMapper().map(request, OrderDTO.class);
+        OrderDTO orderDTO = service.fromRequest(request);
         orderDTO = service.insert(orderDTO);
         OrderResponse response = new ModelMapper().map(orderDTO, OrderResponse.class);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(orderDTO.getId()).toUri();
+
         return ResponseEntity.created(uri).body(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderResponse> update(@PathVariable Long id, @RequestBody OrderRequest request) {
-        ModelMapper mapper = new ModelMapper();
-        OrderDTO dto = mapper.map(request, OrderDTO.class);
+        OrderDTO dto = service.fromRequest(request);
         dto = service.update(id, dto);
-        OrderResponse response = mapper.map(dto, OrderResponse.class);
+        OrderResponse response = new ModelMapper().map(dto, OrderResponse.class);
         return ResponseEntity.ok().body(response);
     }
 

@@ -5,6 +5,7 @@ import com.uece.coffeebreak.entity.exception.DatabaseException;
 import com.uece.coffeebreak.entity.exception.ResourceNotFoundException;
 import com.uece.coffeebreak.repository.ProductRepository;
 import com.uece.coffeebreak.shared.ProductDTO;
+import com.uece.coffeebreak.view.model.request.ProductRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,6 +31,13 @@ public class ProductService {
         Product product = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
         return new ModelMapper().map(product, ProductDTO.class);
+    }
+
+    public List<ProductDTO> findByName(String name) {
+        List<Product> products = repository.findByNameContaining(name);
+        return products.stream()
+                .map(product -> new ModelMapper().map(product, ProductDTO.class))
+                .collect(Collectors.toList());
     }
 
     public ProductDTO insert(ProductDTO productDTO) {
@@ -59,5 +67,9 @@ public class ProductService {
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }
+    }
+
+    public ProductDTO fromRequest(ProductRequest request) {
+        return new ModelMapper().map(request, ProductDTO.class);
     }
 }

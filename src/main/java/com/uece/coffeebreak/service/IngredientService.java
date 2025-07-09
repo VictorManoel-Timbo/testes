@@ -31,6 +31,13 @@ public class IngredientService {
         return new ModelMapper().map(ingredient, IngredientDTO.class);
     }
 
+    public List<IngredientDTO> findByName(String name) {
+        List<Ingredient> ingredients = repository.findByNameContaining(name);
+        return ingredients.stream()
+                .map(ingredient -> new ModelMapper().map(ingredient, IngredientDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public IngredientDTO insert(IngredientDTO ingredientDTO) {
         ingredientDTO.setId(null);
         Ingredient ingredient = new ModelMapper().map(ingredientDTO, Ingredient.class);

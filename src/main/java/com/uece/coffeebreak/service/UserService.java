@@ -79,7 +79,7 @@ public class UserService{
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
         mapper.map(userDTO, user);
-        if (!userDTO.getPassword().equals(user.getPassword())) {
+        if (!encoder.matches(userDTO.getPassword(), user.getPassword())) {
             user.setPassword(encoder.encode(userDTO.getPassword()));
         } else {
             user.setPassword(user.getPassword());

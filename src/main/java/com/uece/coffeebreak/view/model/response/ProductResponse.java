@@ -1,7 +1,6 @@
 package com.uece.coffeebreak.view.model.response;
 
-import com.uece.coffeebreak.shared.CategoryDTO;
-import com.uece.coffeebreak.shared.CompProductStockDTO;
+import com.uece.coffeebreak.entity.enums.Available;
 
 import java.util.List;
 
@@ -9,11 +8,11 @@ public class ProductResponse {
     private Long id;
     private String name;
     private Double price;
-    private String available;
+    private Available available;
     private String imageUrl;
     private Integer calories;
-    private CategoryDTO category;
-    private List<CompProductStockDTO> composition;
+    private CategoryResponse category;
+    private List<CompProductStockResponse> composition;
 
     public Long getId() {
         return id;
@@ -39,11 +38,11 @@ public class ProductResponse {
         this.price = price;
     }
 
-    public String getAvailable() {
+    public Available getAvailable() {
         return available;
     }
 
-    public void setAvailable(String available) {
+    public void setAvailable(Available available) {
         this.available = available;
     }
 
@@ -63,19 +62,19 @@ public class ProductResponse {
         this.calories = calories;
     }
 
-    public CategoryDTO getCategory() {
+    public CategoryResponse getCategory() {
         return category;
     }
 
-    public void setCategory(CategoryDTO category) {
+    public void setCategory(CategoryResponse category) {
         this.category = category;
     }
 
-    public List<CompProductStockDTO> getComposition() {
+    public List<CompProductStockResponse> getComposition() {
         return composition;
     }
 
-    public void setComposition(List<CompProductStockDTO> composition) {
+    public void setComposition(List<CompProductStockResponse> composition) {
         this.composition = composition;
     }
 }

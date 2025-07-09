@@ -37,6 +37,16 @@ public class ProductController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductResponse>> findByName(@RequestParam(value = "name") String name) {
+        List<ProductDTO> productsDTO = service.findByName(name);
+        ModelMapper mapper = new ModelMapper();
+        List<ProductResponse> response = productsDTO.stream()
+                .map(product -> mapper.map(product, ProductResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
+    }
+
     @PostMapping
     public ResponseEntity<ProductResponse> insert(@RequestBody ProductRequest request) {
         ModelMapper mapper = new ModelMapper();

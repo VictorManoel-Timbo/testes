@@ -6,9 +6,8 @@ import com.uece.coffeebreak.entity.exception.ResourceNotFoundException;
 import com.uece.coffeebreak.repository.OrderRepository;
 import com.uece.coffeebreak.repository.ProductRepository;
 import com.uece.coffeebreak.repository.UserRepository;
-import com.uece.coffeebreak.shared.OrderDTO;
-import com.uece.coffeebreak.shared.OrderProductDTO;
-import com.uece.coffeebreak.shared.PaymentDTO;
+import com.uece.coffeebreak.shared.*;
+import com.uece.coffeebreak.view.model.request.OrderRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,6 +41,7 @@ public class OrderService {
     }
 
     public OrderDTO insert(OrderDTO orderDTO) {
+        orderDTO.setId(null);
         Order order = new ModelMapper().map(orderDTO, Order.class);
 
         User client = userRepository.findById(orderDTO.getClient().getId())
@@ -76,9 +76,15 @@ public class OrderService {
     public OrderDTO update(Long id, OrderDTO orderDTO) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
+
+        User currentClient = order.getClient();
+
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
         mapper.map(orderDTO, order);
+
+        order.setClient(currentClient);
+
         if (orderDTO.getItems() != null) {
             order.getItems().clear();
             for (OrderProductDTO itemDTO : orderDTO.getItems()) {
@@ -98,6 +104,7 @@ public class OrderService {
                 order.getItems().add(item);
             }
         }
+
         if (orderDTO.getPayment() != null) {
             PaymentDTO payDTO = orderDTO.getPayment();
             Payment payment = new Payment();
@@ -105,6 +112,7 @@ public class OrderService {
             payment.setOrder(order);
             order.setPayment(payment);
         }
+
         order.getTotal();
         order = orderRepository.save(order);
         return mapper.map(order, OrderDTO.class);
@@ -119,4 +127,41 @@ public class OrderService {
             throw new DatabaseException(e.getMessage());
         }
     }
+
+    public OrderDTO fromRequest(OrderRequest request) {
+        ModelMapper mapper = new ModelMapper();
+        OrderDTO dto = new OrderDTO();
+
+        dto.setMoment(request.getMoment());
+        dto.setStatus(request.getStatus());
+        dto.setWithdrawalMethod(request.getWithdrawalMethod());
+
+        User client = userRepository.findById(request.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + request.getClientId()));
+        UserDTO clientDTO = mapper.map(client, UserDTO.class);
+        dto.setClient(clientDTO);
+
+        List<OrderProductDTO> items = request.getItems().stream().map(itemReq -> {
+            Product product = productRepository.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemReq.getProductId()));
+            ProductDTO productDTO = mapper.map(product, ProductDTO.class);
+
+            OrderProductDTO itemDTO = new OrderProductDTO();
+            itemDTO.setProduct(productDTO);
+            itemDTO.setQuantity(itemReq.getQuantity());
+            itemDTO.setPrice(product.getPrice());
+            itemDTO.setDiscount(itemReq.getDiscount());
+            itemDTO.setObservation(itemReq.getObservation());
+
+            return itemDTO;
+        }).collect(Collectors.toList());
+
+        dto.setItems(items);
+        if (request.getPayment() != null) {
+            PaymentDTO payDTO = mapper.map(request.getPayment(), PaymentDTO.class);
+            dto.setPayment(payDTO);
+        }
+        return dto;
+    }
+
 }

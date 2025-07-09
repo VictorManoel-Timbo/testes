@@ -29,6 +29,7 @@ public class Order implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private WithdrawalMethod withdrawalMethod;
 
+    @Transient
     private Double total;
 
     @ManyToOne

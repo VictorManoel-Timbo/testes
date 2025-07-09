@@ -3,7 +3,6 @@ package com.uece.coffeebreak.view.model.request;
 public class OrderProductRequest {
     private Long productId;
     private Integer quantity;
-    private Double price;
     private Double discount;
     private String observation;
 
@@ -21,14 +20,6 @@ public class OrderProductRequest {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
     }
 
     public Double getDiscount() {

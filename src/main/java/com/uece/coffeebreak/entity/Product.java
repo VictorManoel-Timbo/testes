@@ -36,7 +36,7 @@ public class Product implements Serializable {
     @OneToMany(mappedBy = "id.product")
     private Set<OrderProduct> items = new HashSet<>();
 
-    @OneToMany(mappedBy = "id.product")
+    @OneToMany(mappedBy = "id.product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CompProductStock> composition = new HashSet<>();
 
     public Product() {}

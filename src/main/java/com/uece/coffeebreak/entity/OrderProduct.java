@@ -79,10 +79,7 @@ public class OrderProduct implements Serializable {
     }
 
     public Double getSubTotal() {
-        if (discount == null) {
-            discount = 0.0;
-        }
-        return (price * quantity) - discount;
+        return (price * quantity) - (discount == null ? 0.0 : discount);
     }
 
     @Override
