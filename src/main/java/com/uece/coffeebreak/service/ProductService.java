@@ -52,6 +52,31 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    public List<ProductSalesDTO> findPopularProducts() {
+        List<Object[]> results = productRepository.findPopularProducts();
+        return results.stream()
+                .map(row -> new ProductSalesDTO(
+                        (Long) row[0],
+                        (String) row[1],
+                        (Long) row[2]
+                ))
+                .toList();
+    }
+
+    public List<ProductDTO> getProductsPriceGreaterCategory() {
+        List<Product> products = productRepository.findProductsPriceGreaterCategory();
+        return products.stream()
+                .map(product -> new ModelMapper().map(product, ProductDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductDTO> getProductsCaloriesGreaterCategory() {
+        List<Product> products = productRepository.findProductsCaloriesGreaterCategory();
+        return products.stream()
+                .map(product -> new ModelMapper().map(product, ProductDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public ProductDTO insert(ProductDTO productDTO) {
         productDTO.setId(null);
         Product product = new ModelMapper().map(productDTO, Product.class);
@@ -64,6 +89,24 @@ public class ProductService {
         product = productRepository.save(product);
         productDTO.setId(product.getId());
         return productDTO;
+    }
+
+    public List<ProductDTO> insertAll(List<ProductDTO> productsDTO) {
+        ModelMapper mapper = new ModelMapper();
+        List<Product> products = productsDTO.stream()
+                .map(dto -> {
+                    Product product = mapper.map(dto, Product.class);
+                    product.getComposition().clear();
+                    for (CompProductStockDTO compDTO : dto.getComposition()) {
+                        addCompositionToProduct(product, compDTO);
+                    }
+                    return product;
+                })
+                .collect(Collectors.toList());
+        return productRepository.saveAll(products)
+                .stream()
+                .map(prod -> mapper.map(prod, ProductDTO.class))
+                .collect(Collectors.toList());
     }
 
     public ProductDTO update(Long id, ProductDTO productDTO) {
@@ -98,12 +141,9 @@ public class ProductService {
     }
 
     private void addCompositionToProduct(Product product, CompProductStockDTO compDTO) {
-        Stock stock = stockRepository.findById(compDTO.getStock().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + compDTO.getStock().getId() + " not found"));
-
-        Ingredient ingredient = ingredientRepository.findById(compDTO.getIngredient().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + compDTO.getStock().getId() + " not found"));
-
+        ModelMapper mapper = new ModelMapper();
+        Stock stock = mapper.map(compDTO.getStock(), Stock.class);
+        Ingredient ingredient = mapper.map(compDTO.getIngredient(), Ingredient.class);
         CompProductStock composition = new CompProductStock(
                 product,
                 stock,

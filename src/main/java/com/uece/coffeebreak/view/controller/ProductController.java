@@ -2,6 +2,7 @@ package com.uece.coffeebreak.view.controller;
 
 import com.uece.coffeebreak.service.ProductService;
 import com.uece.coffeebreak.shared.ProductDTO;
+import com.uece.coffeebreak.shared.ProductSalesDTO;
 import com.uece.coffeebreak.view.model.request.ProductRequest;
 import com.uece.coffeebreak.view.model.response.ProductResponse;
 import org.modelmapper.ModelMapper;
@@ -25,7 +26,7 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> findAll() {
         List<ProductDTO> productsDTO = service.findAll();
         List<ProductResponse> response = productsDTO.stream()
-                .map(prod -> new ModelMapper().map(prod, ProductResponse.class))
+                .map(productDTO -> new ModelMapper().map(productDTO, ProductResponse.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
     }
@@ -42,7 +43,31 @@ public class ProductController {
         List<ProductDTO> productsDTO = service.findByName(name);
         ModelMapper mapper = new ModelMapper();
         List<ProductResponse> response = productsDTO.stream()
-                .map(product -> mapper.map(product, ProductResponse.class))
+                .map(productDTO -> mapper.map(productDTO, ProductResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/sales")
+    public ResponseEntity<List<ProductSalesDTO>> findPopularProducts() {
+        List<ProductSalesDTO> productSalesDTO = service.findPopularProducts();
+        return ResponseEntity.ok().body(productSalesDTO);
+    }
+
+    @GetMapping("/price-greater")
+    public ResponseEntity<List<ProductResponse>> getProductsPriceGreaterCategory() {
+        List<ProductDTO> productsDTO = service.getProductsPriceGreaterCategory();
+        List<ProductResponse> response = productsDTO.stream()
+                .map(productDTO -> new ModelMapper().map(productDTO, ProductResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/calories-greater")
+    public ResponseEntity<List<ProductResponse>> getProductsCaloriesGreaterCategory() {
+        List<ProductDTO> productsDTO = service.getProductsCaloriesGreaterCategory();
+        List<ProductResponse> response = productsDTO.stream()
+                .map(productDTO -> new ModelMapper().map(productDTO, ProductResponse.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
     }
@@ -54,6 +79,17 @@ public class ProductController {
         ProductResponse response = new ModelMapper().map(productDTO, ProductResponse.class);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(productDTO.getId()).toUri();
+        return ResponseEntity.created(uri).body(response);
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<List<ProductResponse>> insertAll(@RequestBody List<ProductRequest> request) {
+        List<ProductDTO> productsDTO = request.stream().map(req -> service.fromRequest(req)).toList();
+        productsDTO = service.insertAll(productsDTO);
+        List<ProductResponse> response = productsDTO.stream()
+                .map(productDTO -> new ModelMapper().map(productDTO, ProductResponse.class))
+                .toList();
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
         return ResponseEntity.created(uri).body(response);
     }
 

@@ -2,6 +2,7 @@ package com.uece.coffeebreak.view.controller;
 
 import com.uece.coffeebreak.service.UserService;
 import com.uece.coffeebreak.shared.UserDTO;
+import com.uece.coffeebreak.shared.UserOrderCountDTO;
 import com.uece.coffeebreak.view.model.request.UserRequest;
 import com.uece.coffeebreak.view.model.response.UserResponse;
 import org.modelmapper.ModelMapper;
@@ -26,7 +27,7 @@ public class UserController {
         List<UserDTO> usersDTO =  service.findAll();
         ModelMapper mapper = new ModelMapper();
         List<UserResponse> response = usersDTO.stream()
-                .map(user -> mapper.map(user, UserResponse.class))
+                .map(userDTO -> mapper.map(userDTO, UserResponse.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
     }
@@ -47,9 +48,23 @@ public class UserController {
     @GetMapping(value = "/search")
     public ResponseEntity<List<UserResponse>> findByName(@RequestParam(value = "name") String name) {
         List<UserDTO> usersDTO = service.findByName(name);
-        ModelMapper mapper = new ModelMapper();
         List<UserResponse> response = usersDTO.stream()
-                .map(user -> mapper.map(user, UserResponse.class))
+                .map(userDTO -> new ModelMapper().map(userDTO, UserResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/order-count")
+    public ResponseEntity<List<UserOrderCountDTO>> findUserOrderCounts() {
+        List<UserOrderCountDTO> userOrderCountDTOS = service.findUserOrderCounts();
+        return ResponseEntity.ok().body(userOrderCountDTOS);
+    }
+
+    @GetMapping("/clients-greater/{id}")
+    public ResponseEntity<List<UserResponse>> getClientsOrdersSumGreater(@PathVariable Long id) {
+        List<UserDTO> usersDTO = service.findClientsOrdersSumGreater(id);
+        List<UserResponse> response = usersDTO.stream()
+                .map(userDTO -> new ModelMapper().map(userDTO, UserResponse.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
     }

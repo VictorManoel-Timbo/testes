@@ -7,6 +7,7 @@ import com.uece.coffeebreak.entity.exception.ResourceNotFoundException;
 import com.uece.coffeebreak.repository.UserRepository;
 import com.uece.coffeebreak.shared.StockDTO;
 import com.uece.coffeebreak.shared.UserDTO;
+import com.uece.coffeebreak.shared.UserOrderCountDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -50,6 +51,27 @@ public class UserService{
                 .collect(Collectors.toList());
     }
 
+    public List<UserOrderCountDTO> findUserOrderCounts() {
+        List<Object[]> results = repository.countOrdersByUser();
+
+        return results.stream()
+                .map(row -> new UserOrderCountDTO(
+                        (Long) row[0],             // userId
+                        (String) row[1],           // name
+                        (Long) row[2]              // totalOrders
+                ))
+                .toList();
+    }
+
+    public List<UserDTO> findClientsOrdersSumGreater(Long id) {
+        repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+        List<User> users = repository.findClientsOrdersSumGreater(id);
+        return users.stream()
+                .map(user -> new ModelMapper().map(user, UserDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public UserDTO insert(UserDTO userDTO) {
         if (repository.existsByEmail(userDTO.getEmail())) {
             throw new DatabaseException("E-mail already exists");
@@ -77,6 +99,9 @@ public class UserService{
 
     public UserDTO update(Long id, UserDTO userDTO) {
         userDTO.setId(id);
+        if (repository.existsByEmail(userDTO.getEmail())) {
+            throw new DatabaseException("E-mail already exists");
+        }
         User user = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         ModelMapper mapper = new ModelMapper();
