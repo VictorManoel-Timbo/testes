@@ -19,16 +19,28 @@ public class StockService {
     private StockRepository repository;
 
     public List<StockDTO> findAll() {
-        List<Stock> stocks = repository.findAll();
+        List<Stock> stocks = repository.findAllStocks();
         return stocks.stream()
                 .map(stock -> new ModelMapper().map(stock, StockDTO.class))
                 .collect(Collectors.toList());
     }
 
     public StockDTO findById(Long id) {
-        Stock stock = repository.findById(id)
+        Stock stock = repository.findStockById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + id + " not found"));
         return new ModelMapper().map(stock, StockDTO.class);
+    }
+
+    public List<StockDTO> findAllOrdered(String direction) {
+        List<Stock> stocks;
+        if ("desc".equalsIgnoreCase(direction)) {
+            stocks = repository.findAllDesc();
+        } else {
+            stocks = repository.findAllAsc();
+        }
+        return stocks.stream()
+                .map(stock -> new ModelMapper().map(stock, StockDTO.class))
+                .collect(Collectors.toList());
     }
 
     public StockDTO insert(StockDTO stockDTO) {
@@ -41,7 +53,7 @@ public class StockService {
 
     public StockDTO update(Long id, StockDTO stockDTO) {
         stockDTO.setId(id);
-        Stock stock = repository.findById(id)
+        Stock stock = repository.findStockById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + id + " not found"));
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
@@ -52,9 +64,10 @@ public class StockService {
 
     public void delete(Long id) {
         try {
-            repository.findById(id)
+            repository.findStockById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + id + " not found"));
-            repository.deleteById(id);
+            repository.deleteCompositionsByStockId(id);
+            repository.deleteStockById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }

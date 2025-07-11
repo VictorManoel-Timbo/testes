@@ -55,8 +55,8 @@ public class ProductController {
     }
 
     @GetMapping("/price-greater")
-    public ResponseEntity<List<ProductResponse>> getProductsPriceGreaterCategory() {
-        List<ProductDTO> productsDTO = service.getProductsPriceGreaterCategory();
+    public ResponseEntity<List<ProductResponse>> findProductsPriceGreaterCategory() {
+        List<ProductDTO> productsDTO = service.findProductsPriceGreaterCategory();
         List<ProductResponse> response = productsDTO.stream()
                 .map(productDTO -> new ModelMapper().map(productDTO, ProductResponse.class))
                 .collect(Collectors.toList());
@@ -64,8 +64,8 @@ public class ProductController {
     }
 
     @GetMapping("/calories-greater")
-    public ResponseEntity<List<ProductResponse>> getProductsCaloriesGreaterCategory() {
-        List<ProductDTO> productsDTO = service.getProductsCaloriesGreaterCategory();
+    public ResponseEntity<List<ProductResponse>> findProductsCaloriesGreaterCategory() {
+        List<ProductDTO> productsDTO = service.findProductsCaloriesGreaterCategory();
         List<ProductResponse> response = productsDTO.stream()
                 .map(productDTO -> new ModelMapper().map(productDTO, ProductResponse.class))
                 .collect(Collectors.toList());

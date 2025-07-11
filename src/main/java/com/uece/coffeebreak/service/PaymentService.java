@@ -24,14 +24,14 @@ public class PaymentService {
     private OrderRepository orderRepository;
 
     public List<PaymentDTO> findAll() {
-        List<Payment> payments = paymentRepository.findAll();
+        List<Payment> payments = paymentRepository.findAllPayments();
         return payments.stream()
                 .map(pay -> new ModelMapper().map(pay, PaymentDTO.class))
                 .collect(Collectors.toList());
     }
 
     public PaymentDTO findById(Long id) {
-        Payment payment = paymentRepository.findById(id)
+        Payment payment = paymentRepository.findPaymentById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment with id " + id + " not found"));
         return new ModelMapper().map(payment, PaymentDTO.class);
     }
@@ -40,7 +40,7 @@ public class PaymentService {
         paymentDTO.setId(null);
         Payment payment = new ModelMapper().map(paymentDTO, Payment.class);
         if (paymentDTO.getOrderId() != null) {
-            Order order = orderRepository.findById(paymentDTO.getOrderId())
+            Order order = orderRepository.findOrderById(paymentDTO.getOrderId())
                     .orElseThrow(() -> new ResourceNotFoundException("Order with id " + paymentDTO.getOrderId() + " not found"));
             payment.setOrder(order);
         }
@@ -51,7 +51,7 @@ public class PaymentService {
 
     public PaymentDTO update(Long id, PaymentDTO paymentDTO) {
         paymentDTO.setId(id);
-        Payment payment = paymentRepository.findById(id)
+        Payment payment = paymentRepository.findPaymentById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment with id " + id + " not found"));
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
@@ -65,12 +65,12 @@ public class PaymentService {
 
     public void delete(Long id) {
         try {
-            Payment payment = paymentRepository.findById(id)
+            Payment payment = paymentRepository.findPaymentById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Payment with id " + id + " not found"));
             Order order = payment.getOrder();
             order.setPayment(null);
             orderRepository.save(payment.getOrder());
-            paymentRepository.deleteById(id);
+            paymentRepository.deletePaymentById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }

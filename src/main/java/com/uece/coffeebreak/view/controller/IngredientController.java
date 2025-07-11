@@ -2,6 +2,7 @@ package com.uece.coffeebreak.view.controller;
 
 import com.uece.coffeebreak.service.IngredientService;
 import com.uece.coffeebreak.shared.IngredientDTO;
+import com.uece.coffeebreak.shared.IngredientUsageDTO;
 import com.uece.coffeebreak.view.model.request.IngredientRequest;
 import com.uece.coffeebreak.view.model.response.IngredientResponse;
 import org.modelmapper.ModelMapper;
@@ -44,6 +45,12 @@ public class IngredientController {
                 .map(ingredient -> mapper.map(ingredient, IngredientResponse.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/more-used")
+    public ResponseEntity<List<IngredientUsageDTO>> getFrequentIngredients() {
+        List<IngredientUsageDTO> ingredients = service.findMoreUsed();
+        return ResponseEntity.ok().body(ingredients);
     }
 
     @PostMapping

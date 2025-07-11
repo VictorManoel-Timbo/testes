@@ -25,14 +25,14 @@ public class CategoryService {
     private ProductRepository productRepository;
 
     public List<CategoryDTO> findAll() {
-        List<Category> categories = repository.findAll();
+        List<Category> categories = repository.findAllCategories();
         return categories.stream()
                 .map(cat -> new ModelMapper().map(cat, CategoryDTO.class))
                 .collect(Collectors.toList());
     }
 
     public CategoryDTO findById(Long id) {
-        Category category = repository.findById(id)
+        Category category = repository.findCategoryById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category with id " + id + " not found"));
         return new ModelMapper().map(category, CategoryDTO.class);
     }
@@ -54,7 +54,7 @@ public class CategoryService {
 
     public CategoryDTO update(Long id, CategoryDTO categoryDTO) {
         categoryDTO.setId(id);
-        Category category = repository.findById(id)
+        Category category = repository.findCategoryById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category with id " + id + " not found"));
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
@@ -65,13 +65,13 @@ public class CategoryService {
 
     public void delete(Long id) {
         try {
-            Category category = repository.findById(id)
+            Category category = repository.findCategoryById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Category with id " + id + " not found"));
             for (Product product : category.getProducts()) {
                 product.setCategory(null);
             }
             productRepository.saveAll(category.getProducts());
-            repository.deleteById(id);
+            repository.deleteCategoryById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }

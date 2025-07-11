@@ -5,6 +5,7 @@ import com.uece.coffeebreak.entity.exception.DatabaseException;
 import com.uece.coffeebreak.entity.exception.ResourceNotFoundException;
 import com.uece.coffeebreak.repository.IngredientRepository;
 import com.uece.coffeebreak.shared.IngredientDTO;
+import com.uece.coffeebreak.shared.IngredientUsageDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,14 +20,14 @@ public class IngredientService {
     private IngredientRepository repository;
 
     public List<IngredientDTO> findAll() {
-        List<Ingredient> ingredients = repository.findAll();
+        List<Ingredient> ingredients = repository.findAllIngredients();
         return ingredients.stream()
                 .map(ingredient -> new ModelMapper().map(ingredient, IngredientDTO.class))
                 .collect(Collectors.toList());
     }
 
     public IngredientDTO findById(Long id) {
-        Ingredient ingredient = repository.findById(id)
+        Ingredient ingredient = repository.findIngredientById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + id + " not found"));
         return new ModelMapper().map(ingredient, IngredientDTO.class);
     }
@@ -36,6 +37,17 @@ public class IngredientService {
         return ingredients.stream()
                 .map(ingredient -> new ModelMapper().map(ingredient, IngredientDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    public List<IngredientUsageDTO> findMoreUsed() {
+        List<Object[]> results = repository.findMoreUsed();
+        return results.stream()
+                .map(row -> new IngredientUsageDTO(
+                        ((Number) row[0]).longValue(),
+                        (String) row[1],
+                        ((Number) row[2]).longValue()
+                ))
+                .toList();
     }
 
     public IngredientDTO insert(IngredientDTO ingredientDTO) {
@@ -48,7 +60,7 @@ public class IngredientService {
 
     public IngredientDTO update(Long id, IngredientDTO ingredientDTO) {
         ingredientDTO.setId(id);
-        Ingredient ingredient = repository.findById(id)
+        Ingredient ingredient = repository.findIngredientById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + id + " not found"));
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
@@ -59,9 +71,10 @@ public class IngredientService {
 
     public void delete(Long id) {
         try {
-            repository.findById(id)
+            repository.findIngredientById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + id + " not found"));
-            repository.deleteById(id);
+            repository.deleteCompositionsByIngredientId(id);
+            repository.deleteIngredientById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }

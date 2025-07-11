@@ -56,7 +56,7 @@ public class UserController {
 
     @GetMapping("/order-count")
     public ResponseEntity<List<UserOrderCountDTO>> findUserOrderCounts() {
-        List<UserOrderCountDTO> userOrderCountDTOS = service.findUserOrderCounts();
+        List<UserOrderCountDTO> userOrderCountDTOS = service.countOrdersByUser();
         return ResponseEntity.ok().body(userOrderCountDTOS);
     }
 

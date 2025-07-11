@@ -33,14 +33,14 @@ public class ProductService {
     private IngredientRepository ingredientRepository;
 
     public List<ProductDTO> findAll() {
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findAllProducts();
         return products.stream()
                 .map(product -> new ModelMapper().map(product, ProductDTO.class))
                 .collect(Collectors.toList());
     }
 
     public ProductDTO findById(Long id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findProductById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
         return new ModelMapper().map(product, ProductDTO.class);
     }
@@ -63,14 +63,14 @@ public class ProductService {
                 .toList();
     }
 
-    public List<ProductDTO> getProductsPriceGreaterCategory() {
+    public List<ProductDTO> findProductsPriceGreaterCategory() {
         List<Product> products = productRepository.findProductsPriceGreaterCategory();
         return products.stream()
                 .map(product -> new ModelMapper().map(product, ProductDTO.class))
                 .collect(Collectors.toList());
     }
 
-    public List<ProductDTO> getProductsCaloriesGreaterCategory() {
+    public List<ProductDTO> findProductsCaloriesGreaterCategory() {
         List<Product> products = productRepository.findProductsCaloriesGreaterCategory();
         return products.stream()
                 .map(product -> new ModelMapper().map(product, ProductDTO.class))
@@ -111,7 +111,7 @@ public class ProductService {
 
     public ProductDTO update(Long id, ProductDTO productDTO) {
         productDTO.setId(id);
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findProductById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
         Category category = product.getCategory();
@@ -158,9 +158,11 @@ public class ProductService {
 
     public void delete(Long id) {
         try {
-            Product product = productRepository.findById(id)
+            productRepository.findProductById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
-            productRepository.deleteById(id);
+            productRepository.deleteCompositionsByProductId(id);
+            productRepository.deleteItemsByProductId(id);
+            productRepository.deleteProductById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -176,16 +178,16 @@ public class ProductService {
         productDTO.setImageUrl(request.getImageUrl());
         productDTO.setCalories(request.getCalories());
 
-        Category category = categoryRepository.findById(request.getCategoryId())
+        Category category = categoryRepository.findCategoryById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category with id " + request.getCategoryId() + " not found"));
 
         CategoryDTO categoryDTO = mapper.map(category, CategoryDTO.class);
         productDTO.setCategory(categoryDTO);
 
         List<CompProductStockDTO> compositionsDTO = request.getComposition().stream().map(compReq -> {
-            Stock stock = stockRepository.findById(compReq.getStockId())
+            Stock stock = stockRepository.findStockById(compReq.getStockId())
                     .orElseThrow(() -> new ResourceNotFoundException("Stock with id " + compReq.getStockId() + " not found"));
-            Ingredient ingredient = ingredientRepository.findById(compReq.getIngredientId())
+            Ingredient ingredient = ingredientRepository.findIngredientById(compReq.getIngredientId())
                     .orElseThrow(() -> new ResourceNotFoundException("Ingredient with id " + compReq.getIngredientId() + " not found"));
             StockDTO stockDTO = mapper.map(stock, StockDTO.class);
             IngredientDTO ingredientDTO = mapper.map(ingredient, IngredientDTO.class);

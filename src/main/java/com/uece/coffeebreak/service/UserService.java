@@ -26,14 +26,14 @@ public class UserService{
     private PasswordEncoder encoder;
 
     public List<UserDTO> findAll() {
-        List<User> users = repository.findAll();
+        List<User> users = repository.findAllUsers();
         return users.stream()
                 .map(user -> new ModelMapper().map(user, UserDTO.class))
                 .collect(Collectors.toList());
     }
 
     public UserDTO findById(Long id) {
-        User user = repository.findById(id)
+        User user = repository.findUserById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         return new ModelMapper().map(user, UserDTO.class);
     }
@@ -51,20 +51,19 @@ public class UserService{
                 .collect(Collectors.toList());
     }
 
-    public List<UserOrderCountDTO> findUserOrderCounts() {
+    public List<UserOrderCountDTO> countOrdersByUser() {
         List<Object[]> results = repository.countOrdersByUser();
-
         return results.stream()
                 .map(row -> new UserOrderCountDTO(
-                        (Long) row[0],             // userId
-                        (String) row[1],           // name
-                        (Long) row[2]              // totalOrders
+                        (Long) row[0],
+                        (String) row[1],
+                        (Long) row[2]
                 ))
                 .toList();
     }
 
     public List<UserDTO> findClientsOrdersSumGreater(Long id) {
-        repository.findById(id)
+        repository.findUserById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         List<User> users = repository.findClientsOrdersSumGreater(id);
         return users.stream()
@@ -82,16 +81,19 @@ public class UserService{
         }
         User user = new ModelMapper().map(userDTO, User.class);
         user.setPassword(encoder.encode(user.getPassword()));
-        user = repository.save(user);
+        repository.insertUser(user);
         userDTO.setId(user.getId());
         return userDTO;
     }
 
     public void delete(Long id) {
         try {
-            repository.findById(id)
+            repository.findUserById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
-            repository.deleteById(id);
+            repository.deleteItemsByClientId(id);
+            repository.deletePaymentsByClientId(id);
+            repository.deleteOrdersByUserId(id);
+            repository.deleteUserById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -102,7 +104,7 @@ public class UserService{
         if (repository.existsByEmail(userDTO.getEmail())) {
             throw new DatabaseException("E-mail already exists");
         }
-        User user = repository.findById(id)
+        User user = repository.findUserById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setSkipNullEnabled(true);
@@ -112,7 +114,7 @@ public class UserService{
         } else {
             user.setPassword(user.getPassword());
         }
-        user = repository.save(user);
+        repository.insertUser(user);
         return mapper.map(user, UserDTO.class);
     }
 

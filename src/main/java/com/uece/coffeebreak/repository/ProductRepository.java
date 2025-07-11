@@ -2,12 +2,36 @@ package com.uece.coffeebreak.repository;
 
 import com.uece.coffeebreak.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    @Query("SELECT p FROM Product p")
+    List<Product> findAllProducts();
+
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    Optional<Product> findProductById(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM CompProductStock cps WHERE cps.id.product.id = :productId")
+    void deleteCompositionsByProductId(@Param("productId") Long productId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM OrderProduct op WHERE op.id.product.id = :productId")
+    void deleteItemsByProductId(@Param("productId") Long productId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Product p WHERE p.id = :id")
+    void deleteProductById(@Param("id") Long id);
 
     @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :substring,'%'))")
     List<Product> findByNameContaining(@Param("substring") String name);

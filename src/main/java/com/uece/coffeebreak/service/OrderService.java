@@ -29,13 +29,13 @@ public class OrderService {
     private ProductRepository productRepository;
 
     public List<OrderDTO> findAll() {
-        return orderRepository.findAll().stream()
+        return orderRepository.findAllOrders().stream()
                 .map(order -> new ModelMapper().map(order, OrderDTO.class))
                 .collect(Collectors.toList());
     }
 
     public OrderDTO findById(Long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findOrderById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
         return new ModelMapper().map(order, OrderDTO.class);
     }
@@ -44,13 +44,13 @@ public class OrderService {
         orderDTO.setId(null);
         Order order = new ModelMapper().map(orderDTO, Order.class);
 
-        User client = userRepository.findById(orderDTO.getClient().getId())
+        User client = userRepository.findUserById(orderDTO.getClient().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + orderDTO.getClient().getId() + " not found"));
         order.setClient(client);
 
         order.getItems().clear();
         for (OrderProductDTO itemDTO : orderDTO.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProduct().getId())
+            Product product = productRepository.findProductById(itemDTO.getProduct().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product with id " + itemDTO.getProduct().getId() + " not found"));
             OrderProduct item = new OrderProduct(
                     order,
@@ -75,7 +75,7 @@ public class OrderService {
 
     public OrderDTO update(Long id, OrderDTO orderDTO) {
         orderDTO.setId(id);
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findOrderById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
 
         User currentClient = order.getClient();
@@ -92,7 +92,7 @@ public class OrderService {
                 if (itemDTO.getProduct() == null || itemDTO.getProduct().getId() == null) {
                     throw new ResourceNotFoundException("Product with id " + itemDTO.getProduct().getId() + " not found");
                 }
-                Product product = productRepository.findById(itemDTO.getProduct().getId())
+                Product product = productRepository.findProductById(itemDTO.getProduct().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Product with id " + itemDTO.getProduct().getId() + " not found"));
                 OrderProduct item = new OrderProduct(
                         order,
@@ -121,9 +121,11 @@ public class OrderService {
 
     public void delete(Long id) {
         try {
-            orderRepository.findById(id)
+            orderRepository.findOrderById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
-            orderRepository.deleteById(id);
+            orderRepository.deleteItemsByOrderId(id);
+            orderRepository.deletePaymentByOrderId(id);
+            orderRepository.deleteOrderById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -137,13 +139,13 @@ public class OrderService {
         orderDTO.setStatus(request.getStatus());
         orderDTO.setWithdrawalMethod(request.getWithdrawalMethod());
 
-        User client = userRepository.findById(request.getClientId())
+        User client = userRepository.findUserById(request.getClientId())
                 .orElseThrow(() -> new ResourceNotFoundException("Client with id " + request.getClientId() + " not found"));
         UserDTO clientDTO = mapper.map(client, UserDTO.class);
         orderDTO.setClient(clientDTO);
 
         List<OrderProductDTO> items = request.getItems().stream().map(itemReq -> {
-            Product product = productRepository.findById(itemReq.getProductId())
+            Product product = productRepository.findProductById(itemReq.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product  with id " + itemReq.getProductId() + " not found"));
             ProductDTO productDTO = mapper.map(product, ProductDTO.class);
 

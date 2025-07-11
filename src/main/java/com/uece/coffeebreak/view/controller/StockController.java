@@ -36,6 +36,15 @@ public class StockController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/ordered")
+    public ResponseEntity<List<StockResponse>> findAllOrdered(@RequestParam(defaultValue = "asc") String direction) {
+        List<StockDTO> stocksDTO = service.findAllOrdered(direction);
+        List<StockResponse> response = stocksDTO.stream()
+                .map(stockDTO -> new ModelMapper().map(stockDTO, StockResponse.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(response);
+    }
+
     @PostMapping
     public ResponseEntity<StockResponse> insert(@RequestBody StockRequest request) {
         ModelMapper mapper = new ModelMapper();

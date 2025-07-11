@@ -30,7 +30,6 @@ public class Stock implements Serializable {
     @OneToMany(mappedBy = "id.stock", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CompProductStock> composition = new HashSet<CompProductStock>();
 
-
     public Stock() {}
     public Stock(Long id ,StockType type, Integer capacity, Double temperature, String description) {
         this.id = id;
