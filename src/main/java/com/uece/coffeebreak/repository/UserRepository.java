@@ -35,14 +35,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Transactional
-    @Query(value = """
-        INSERT INTO tb_user (name, email, password, phone, country, role)
-        VALUES (:#{#user.name}, :#{#user.email}, :#{#user.password}, :#{#user.phone}, :#{#user.country}, :#{#user.role})
-    """, nativeQuery = true)
-    void insertUser(@Param("user") User user);
-
-    @Modifying
-    @Transactional
     @Query("DELETE FROM User u WHERE u.id = :id")
     void deleteUserById(@Param("id") Long id);
 

@@ -81,7 +81,7 @@ public class UserService{
         }
         User user = new ModelMapper().map(userDTO, User.class);
         user.setPassword(encoder.encode(user.getPassword()));
-        repository.insertUser(user);
+        repository.save(user);
         userDTO.setId(user.getId());
         return userDTO;
     }
@@ -114,7 +114,7 @@ public class UserService{
         } else {
             user.setPassword(user.getPassword());
         }
-        repository.insertUser(user);
+        repository.save(user);
         return mapper.map(user, UserDTO.class);
     }
 
